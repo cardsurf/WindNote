@@ -1,0 +1,398 @@
+﻿<Page x:Class="WindNote.View.HomePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:sys="clr-namespace:System;assembly=mscorlib"
+      xmlns:prism="clr-namespace:Microsoft.Practices.Prism.Mvvm;assembly=Microsoft.Practices.Prism.Mvvm.Desktop"
+      xmlns:customControls="clr-namespace:WindNote.Gui.CustomControls"
+      xmlns:userControls="clr-namespace:WindNote.Gui.UserControls" 
+      xmlns:attachedProperties="clr-namespace:WindNote.Gui.AttachedProperties"
+      xmlns:attachedBehaviors="clr-namespace:WindNote.Gui.AttachedBehaviors"
+      xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+      xmlns:ei="http://schemas.microsoft.com/expression/2010/interactions"
+      mc:Ignorable="d" 
+      prism:ViewModelLocator.AutoWireViewModel="True"
+      d:DesignHeight="300" d:DesignWidth="300"
+	  Title="HomePage"
+      >
+    <i:Interaction.Triggers>
+        <ei:KeyTrigger Key="OemTilde">
+            <ei:CallMethodAction TargetObject="{Binding ElementName=ComboBoxNoteTitle}" MethodName="ToggleOpened" />
+        </ei:KeyTrigger>
+    </i:Interaction.Triggers>
+    <Page.InputBindings>
+        <KeyBinding Key="Enter" Command="{Binding Path=PrependActivityAndSelectCommand}"/>
+    </Page.InputBindings>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>   
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="80*"/>
+                <ColumnDefinition Width="20*"/>
+            </Grid.ColumnDefinitions>
+
+            <customControls:ComboBoxTransparent
+                x:Name="ComboBoxNoteTitle"
+                Grid.Column="0"
+                ImageButtonUri="pack://application:,,,/WindNote;component/resources/images/drop_arrow_box.png"
+                ButtonWidth="40"
+                MaxDropDownHeight="300"
+                HintText="New note"
+                ItemsSource="{Binding Notes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                SelectedItem="{Binding ComboBoxSelectedNote, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                Text="{Binding ComboBoxSelectedNoteText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                ObservableItems="{Binding Notes}"
+                IsTextSearchEnabled="False"
+                TextSearch.TextPath="Title"
+                >
+                <ComboBox.ItemContainerStyle>
+                    <Style TargetType="ComboBoxItem">
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style>
+                </ComboBox.ItemContainerStyle>
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <customControls:TextBoxHint x:Name="ComboBoxListItem"
+                                                        HorizontalAlignment="Stretch"
+                                                        VerticalAlignment="Center"
+                                                        Style="{StaticResource TextBoxTransparentStyle}"
+                                                        Text="{Binding Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                        HintText="New note"
+                                                        Grid.Column="0"
+                                                        >
+                            </customControls:TextBoxHint>
+                            <StackPanel Grid.Column="1"
+                                        Orientation="Vertical"
+                                        HorizontalAlignment="Stretch" 
+                                        VerticalAlignment="Center" 
+                                        Cursor="Hand">
+                                <StackPanel x:Name="MoveNoteButtons"
+                                            Orientation="Horizontal"
+                                            VerticalAlignment="Stretch"
+                                            HorizontalAlignment="Right"
+                                            Cursor="Hand"
+                                            >
+                                    <Button x:Name="MoveNoteUpButton"
+                                            Style="{StaticResource ButtonTransparentStyle}"
+                                            ToolTip="Move up"
+                                            RenderOptions.BitmapScalingMode="Fant"
+                                            Cursor="Hand"
+                                            >
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                                <ei:CallMethodAction TargetObject="{Binding ElementName=ComboBoxNoteTitle}" MethodName="MoveHighlightedItemUp" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Image Style="{StaticResource ImageComboBoxItemStyle}"
+                                                   Source="pack://application:,,,/WindNote;component/resources/images/blue_up.png"
+                                               />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button x:Name="MoveNoteDownButton"
+                                            Style="{StaticResource ButtonTransparentStyle}"
+                                            ToolTip="Move down"
+                                            Cursor="Hand"
+                                            >
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="PreviewMouseLeftButtonDown">
+                                                <ei:CallMethodAction TargetObject="{Binding ElementName=ComboBoxNoteTitle}" MethodName="MoveHighlightedItemDown" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Image Style="{StaticResource ImageComboBoxItemStyle}"
+                                                   Source="pack://application:,,,/WindNote;component/resources/images/blue_down.png"
+                                              />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>     
+            </customControls:ComboBoxTransparent>
+        </Grid>
+        
+        <userControls:LoadingSpinner Grid.Row="1"
+                                     Background="Transparent" 
+                                     VerticalAlignment="Center"
+                                     HorizontalAlignment="Center">
+            <userControls:LoadingSpinner.Style>
+                <Style TargetType="UserControl">
+                    <Setter Property="Visibility" Value="Visible" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Activities,
+                                              Converter={StaticResource IsNotNullConverter}}" Value="True">
+                            <Setter Property="Visibility" Value="Hidden" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </userControls:LoadingSpinner.Style>
+        </userControls:LoadingSpinner>
+
+        <TextBox x:Name="TextBoxAppendActivity"
+                Grid.Row="1"
+                HorizontalContentAlignment="Center"
+                VerticalContentAlignment="Center"
+                Text="Click here to add a task"
+                attachedBehaviors:PreviewMouseDownExecute.Command="{Binding AppendActivityAndSelectCommand}"
+                Cursor="Hand"
+                Panel.ZIndex="2"
+                >
+            <TextBox.Style>
+                <Style TargetType="TextBox" BasedOn="{StaticResource GrayedOutTextBoxStyle}">
+                    <Setter Property="Visibility" Value="Hidden" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Activities.Count}" Value="0">
+                            <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Activities.Count,
+                                              Converter={StaticResource IsGreaterThanConverter},
+                                              ConverterParameter=0}" Value="True">
+                            <Setter Property="Visibility" Value="Hidden" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBox.Style>
+        </TextBox>
+        
+        <ScrollViewer x:Name="ListViewScrollViewer"
+                      Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto">
+            <customControls:ListViewDragAndDrop x:Name="ActivityListView"
+                                                Style="{StaticResource ListViewTransparentStyle}"
+                                                ItemContainerStyle="{StaticResource ListViewItemStretchWidthStyle}"
+                                                ItemsSource="{Binding Activities, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                SelectedItem="{Binding ListViewSelectedActivity, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                ObservableItems="{Binding Activities}"
+                                                Margin="10"
+                                                ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                                                >
+                <ListView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Add task" Command="{Binding AppendActivityAndSelectCommand}"/>
+                    </ContextMenu>
+                </ListView.ContextMenu>
+                <ListView.View>
+                    <GridView ColumnHeaderContainerStyle="{StaticResource GridViewHiddenColumnHeaderStyle}">
+                        <GridViewColumn Width="Auto">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <userControls:DragableRowHeader DataContext="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                                        Tag="{Binding Path=SelectedItem, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                                        Width="45" 
+                                                                        >
+                                            <userControls:DragableRowHeader.ContextMenu>
+                                                <ContextMenu>
+                                                    <MenuItem Header="Move to a note"
+                                                              Style="{StaticResource MenuItemLargeTextStyle}"
+                                                              ItemsSource="{Binding Path=DataContext.Notes, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                              DisplayMemberPath="TitleMenuItem">
+                                                        <MenuItem.ItemContainerStyle>
+                                                            <Style>
+                                                                <Setter Property="MenuItem.Command" Value="{Binding PlacementTarget.DataContext.MoveActivityToNoteCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                                <Setter Property="MenuItem.CommandParameter">
+                                                                    <Setter.Value>
+                                                                        <MultiBinding Converter="{StaticResource MultipleParametersConverter}">
+                                                                            <MultiBinding.Bindings>
+                                                                                <Binding Path="PlacementTarget.Tag" RelativeSource="{RelativeSource AncestorType=ContextMenu}" />
+                                                                                <Binding Path=""/>
+                                                                            </MultiBinding.Bindings>
+                                                                        </MultiBinding>
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                            </Style>
+                                                        </MenuItem.ItemContainerStyle>
+                                                        <MenuItem.Icon>
+                                                            <Image Style="{StaticResource ImageActivityMenuItemStyle}"
+                                                                   Source="pack://application:,,,/WindNote;component/resources/images/blue_arrow.png" />
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <MenuItem Header="Copy to a note"
+                                                              Style="{StaticResource MenuItemLargeTextStyle}"
+                                                              ItemsSource="{Binding Path=DataContext.Notes, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                              DisplayMemberPath="TitleMenuItem"
+                                                              >
+                                                        <MenuItem.ItemContainerStyle>
+                                                            <Style>
+                                                                <Setter Property="MenuItem.Command" Value="{Binding PlacementTarget.DataContext.CopyActivityToNoteCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+                                                                <Setter Property="MenuItem.CommandParameter">
+                                                                    <Setter.Value>
+                                                                        <MultiBinding Converter="{StaticResource MultipleParametersConverter}">
+                                                                            <MultiBinding.Bindings>
+                                                                                <Binding Path="PlacementTarget.Tag" RelativeSource="{RelativeSource AncestorType=ContextMenu}" />
+                                                                                <Binding Path=""/>
+                                                                            </MultiBinding.Bindings>
+                                                                        </MultiBinding>
+                                                                    </Setter.Value>
+                                                                </Setter>    
+                                                            </Style>
+
+                                                        </MenuItem.ItemContainerStyle>
+                                                    <MenuItem.Icon>
+                                                        <Image Style="{StaticResource ImageActivityMenuItemStyle}"
+                                                               Source="pack://application:,,,/WindNote;component/resources/images/document_copy.png" />
+                                                    </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    
+                                                    <Separator/>
+                                                    <MenuItem Header="Insert a new task"
+                                                              Style="{StaticResource MenuItemLargeTextStyle}"
+                                                              Command="{Binding PlacementTarget.DataContext.InsertActivityAndSelectCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" 
+                                                              CommandParameter="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                                    <MenuItem.Icon>
+                                                        <Image Style="{StaticResource ImageActivityMenuItemStyle}"
+                                                               Source="pack://application:,,,/WindNote;component/resources/images/add.png" />
+                                                    </MenuItem.Icon>
+                                                    </MenuItem>
+                                                    <MenuItem Header="Remove the task"
+                                                              Style="{StaticResource MenuItemLargeTextStyle}"
+                                                              Command="{Binding PlacementTarget.DataContext.RemoveActivityAndSelectCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" 
+                                                              CommandParameter="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType=ContextMenu}}">
+                                                        <MenuItem.Icon>
+                                                            <Image Style="{StaticResource ImageActivityMenuItemStyle}"
+                                                                   Source="pack://application:,,,/WindNote;component/resources/images/completed.png" />
+                                                        </MenuItem.Icon>
+                                                    </MenuItem>
+                                                </ContextMenu>
+                                            </userControls:DragableRowHeader.ContextMenu>
+                                        </userControls:DragableRowHeader>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn >
+                        <GridViewColumn attachedProperties:GridViewColumnProperties.FillWidth="True">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <customControls:GridClickableContainerTextBox TextBoxName="ListViewItemTextBox"
+                                                                                  Margin="10">
+                                        <customControls:TextBoxHint x:Name="ListViewItemTextBox"
+                                                                    TextWrapping="Wrap"
+                                                                    HorizontalAlignment="Left"
+                                                                    attachedBehaviors:TextBoxIfEmptyKeyDownExecute.Key="Back"
+                                                                    attachedBehaviors:TextBoxIfEmptyKeyDownExecute.Command="{Binding Path=DataContext.RemoveActivityAndSelectCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                                    attachedBehaviors:TextBoxIfEmptyKeyDownExecute.CommandParameter="{Binding Path=SelectedItem, RelativeSource={RelativeSource AncestorType=ListView}}"                     
+                                                                    Text="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                                    HintText="New Task">
+                                            <customControls:TextBoxHint.Style >
+                                                <Style TargetType="TextBox" BasedOn="{StaticResource TextBoxTransparentStyle}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Path=IsSelected, RelativeSource={RelativeSource AncestorType=ListViewItem}}" Value="True">
+                                                            <Setter Property="FocusManager.FocusedElement" Value="{Binding RelativeSource={RelativeSource Self}}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </customControls:TextBoxHint.Style>
+                                            <customControls:TextBoxHint.InputBindings>
+                                                <KeyBinding Key="Enter" 
+                                                            Command="{Binding Path=DataContext.InsertActivityAndSelectCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                            CommandParameter="{Binding Path=SelectedItem, RelativeSource={RelativeSource AncestorType=ListView}}" />
+                                                <KeyBinding Key="Delete" 
+                                                            Command="{Binding Path=DataContext.RemoveActivityAndSelectCommand, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                                            CommandParameter="{Binding Path=SelectedItem, RelativeSource={RelativeSource AncestorType=ListView}}" /> 
+                                                <KeyBinding Key="Up"
+                                                            Command="{Binding Path=DataContext.SelectPreviousActivityCommand, RelativeSource={RelativeSource AncestorType=ListView}}"/>
+                                                <KeyBinding Key="Tab"
+                                                            Command="{Binding Path=DataContext.SelectNextActivityCommand, RelativeSource={RelativeSource AncestorType=ListView}}"/>
+                                                <KeyBinding Key="Down"
+                                                            Command="{Binding Path=DataContext.SelectNextActivityCommand, RelativeSource={RelativeSource AncestorType=ListView}}"/>
+                                                <KeyBinding Modifiers="Shift" Key="Up"
+                                                            Command="{Binding Path=DataContext.MoveSelectedActivityUpCommand, RelativeSource={RelativeSource AncestorType=ListView}}"/>
+                                                <KeyBinding Modifiers="Shift" Key="Down"
+                                                            Command="{Binding Path=DataContext.MoveSelectedActivityDownCommand, RelativeSource={RelativeSource AncestorType=ListView}}"/>
+                                            </customControls:TextBoxHint.InputBindings>
+                                        </customControls:TextBoxHint>
+
+                                    </customControls:GridClickableContainerTextBox>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn >
+                        <GridViewColumn Width="Auto">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button x:Name="InsertActivityButton"
+                                        Grid.Row="2"
+                                        Style="{StaticResource ButtonActivityStyle}"
+                                        DataContext="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                        CommandParameter="{Binding Path=SelectedItem, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                        Command="{Binding InsertActivityAndSelectCommand}"
+                                        ToolTip="Insert a new task"
+                                        >
+                                        <StackPanel Orientation="Horizontal">
+                                            <Image Source="pack://application:,,,/WindNote;component/resources/images/add.png"
+                                                   VerticalAlignment="Center"
+                                                   />
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn >
+                        <GridViewColumn Width="Auto">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Button x:Name="RemoveActivityButton"
+                                        Grid.Row="2"
+                                        Style="{StaticResource ButtonActivityStyle}"
+                                        DataContext="{Binding Path=DataContext, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                        CommandParameter="{Binding Path=SelectedItem, RelativeSource={RelativeSource AncestorType=ListView}}"
+                                        Command="{Binding RemoveActivityAndSelectCommand}"
+                                        ToolTip="Remove the task"
+                                        >
+                                        <StackPanel Orientation="Horizontal">
+                                            <Image Style="{StaticResource ImageCenterStyle}"
+                                                   Source="pack://application:,,,/WindNote;component/resources/images/completed.png"
+                                                   />
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn >
+                    </GridView>
+                </ListView.View>
+            </customControls:ListViewDragAndDrop>
+        </ScrollViewer>
+        <StackPanel x:Name="NoteButtons" 
+                    Grid.Row="2"
+                    Height="50"
+                    Margin="0,20,0,0"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Right">
+            <Button x:Name="AppendNoteButton"
+                        Style="{StaticResource ButtonTransparentStyle}"
+                        Command="{Binding AppendNoteAndSelectCommand}"
+                        ToolTip="Add a Note"
+                        Cursor="Hand"
+                        >
+                <StackPanel Orientation="Horizontal">
+                    <Image Style="{StaticResource ImageCenterStyle}"
+                           Source="pack://application:,,,/WindNote;component/resources/images/add_note.png"
+                            />
+                </StackPanel>
+            </Button>
+            <Button x:Name="RemoveNoteButton"
+                        Style="{StaticResource ButtonTransparentStyle}"
+                        Command="{Binding RemoveNoteAndSelectCommand}"
+                        ToolTip="Remove the Note"
+                        Cursor="Hand"
+                        >
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="pack://application:,,,/WindNote;component/resources/images/remove_note_red.png"
+                           VerticalAlignment="Center" 
+                           />
+                </StackPanel>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Page>
