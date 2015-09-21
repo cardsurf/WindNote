@@ -1,7 +1,7 @@
 #WindNote
 A portable, open source notes organizer for Windows.
 
-![Alt text]("../master/WindNote/Screenshots/windnote_full.png "WindNote")
+![Alt text](../master/WindNote/Screenshots/windnote_full.png "WindNote")
 
 ## Features
 * Add, edit and remove notes
